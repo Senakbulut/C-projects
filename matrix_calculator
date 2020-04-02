@@ -1,0 +1,660 @@
+#include<iostream>
+#include<iomanip>
+#include<fstream>
+#include<string>
+#include<math.h>
+#include <sstream>
+
+using namespace std;
+
+template <class Mtrx>class matris{
+    public:
+
+        matris();
+        void yazdir();
+        void randomata();
+        matris(int,int,char);
+        matris(int,int,Mtrx);
+        void sil();
+        void resize(int,int);
+        void yazdir(string);
+        void matrisolustur();
+        void transpoz();
+        matris(int,int);
+        int determinant();
+        matris<Mtrx> &inverse();
+        matris<Mtrx> &emul(const matris<Mtrx>&);
+
+        matris<Mtrx> &operator+(const matris<Mtrx>&);
+        matris<Mtrx> &operator-(const matris<Mtrx>&);
+        matris<Mtrx> &operator*(const matris<Mtrx>&);
+        matris<Mtrx> &operator+(int);
+        matris<Mtrx> &operator-(int);
+        matris<Mtrx> &operator*(int);
+        matris<Mtrx> &operator/(int);
+        matris<Mtrx> &operator%(int);
+        matris<Mtrx> &operator^(int);
+        ~matris();
+
+
+    protected:
+      int rowcount;
+      int colcount;
+      Mtrx** matriss;
+};
+template <class Mtrx>class table: public matris<Mtrx>
+{
+   public:
+       table();
+       void yazdir();
+       table(int,int,int);
+   protected:
+
+       string** mat2;
+
+};
+template<class Mtrx> void matris<Mtrx>::matrisolustur(){
+//matris olusturan fonksiyon
+   int i;
+   matriss = new Mtrx*[rowcount];
+
+   for (i = 0; i < rowcount; i++)
+        {
+            matriss[i] = new Mtrx[colcount];
+        }
+}
+template<>matris<int>::matris(){
+//default olarak 10x10 matris olusturup 0 ile dolduran constuructor
+  colcount=10;
+  rowcount=10;
+  matrisolustur();
+  int i,j;
+   for(i = 0; i <rowcount; i++)
+           for(j = 0; j <colcount; j++)
+               matriss[i][j] = 0;
+}
+template<>matris<int>::matris(int r1,int c1){
+//ikili constructor ile matris olusturur
+	rowcount=r1;
+    colcount=c1;
+	matriss = new int *[rowcount];
+	for(int i =0;i<rowcount;i++){
+		matriss[i]= new int[colcount];
+	}
+}
+
+template<> void matris<int>::randomata(){
+//random sayi atayarak matrisi doldurur
+    int i,j;
+    srand(time(0));
+    for(i=0;i<rowcount;i++)
+       for(j=0;j<colcount;j++)
+            matriss[i][j]= rand() % 256;
+}
+template<class Mtrx>
+matris<Mtrx>::matris(int rowcount,int colcount,Mtrx sayi){
+//parametrede belirtilen sayi ile matrisi dolduran fonksiyon
+   int i,j;
+   this->colcount=colcount;
+   this->rowcount=rowcount;
+
+   matriss = new Mtrx*[rowcount];
+   for(i = 0;i <rowcount; i++)
+      matriss[i]=new Mtrx[colcount];
+
+   for(i = 0; i <rowcount; i++)
+      for(j = 0; j <colcount; j++)
+         matriss[i][j] = sayi;
+}
+template<class Mtrx> void matris<Mtrx>::sil(){
+//matrisi siler
+    for(int i = 0; i < rowcount; i++){
+       delete[] matriss[i];
+    }
+       delete[] matriss;
+}
+template<class Mtrx>
+matris<Mtrx>::matris(int rowcount,int colcount,char sec){
+//parametredeki char degerine gore random
+//veya birim matris olusturan fonksiyon
+  this->colcount=colcount;
+  this->rowcount=rowcount;
+  int i,j;
+   matriss = new int*[rowcount];
+   for (i = 0; i < rowcount; i++){
+            matriss[i] = new int[colcount];
+        }
+        if (sec=='r'){
+          srand(time(0));
+          for(i=0;i<rowcount;i++)
+             for(j=0;j<colcount;j++)
+             matriss[i][j]= rand() % 256;
+        }
+        else if(sec=='e'){
+          for(i = 0; i <rowcount; i++){
+            for(j = 0; j <colcount; j++){
+               if(i==j)
+                matriss[i][j]=1;
+               else
+                matriss[i][j]=0;
+            }
+
+          }
+        }
+}
+template<class Mtrx>
+void matris<Mtrx>::resize(int rowcount,int colcount){
+//matrisi silip istenen boyuta gore tekrar olusturan fonksiyon
+  for(int i = 0; i < rowcount; i++){
+      delete[] matriss[i];
+  }
+        delete[] matriss;
+
+  this->colcount=colcount;
+  this->rowcount=rowcount;
+
+int secenek;
+cout<<"matris icini 0 ile doldurmak ister misiniz,evet ise 1e basiniz";
+cout<<endl;
+cin>>secenek;
+    if(secenek==1){
+    matrisolustur();
+    for(int i = 0; i <rowcount; i++)
+      for(int j = 0; j <colcount; j++)
+         matriss[i][j] = 0;
+}
+    else if(secenek!=1){
+        matrisolustur();
+    }
+        }
+template<class Mtrx> void matris<Mtrx>::yazdir(){
+//matrisi yazdirir
+int i,j;
+
+    for (i = 0; i < rowcount; i++){
+        for (j = 0; j < colcount; j++){
+            cout<< " "<< matriss[i][j];
+        }
+        cout<<"\n";
+    }
+}
+template<class Mtrx> void matris<Mtrx>::yazdir(string ){
+//matrisi dosyaya yazdirir
+  ofstream dosya;
+  dosya.open("deneme.txt");
+  for (int i = 0; i < rowcount; i++){
+        for (int j = 0; j < colcount; j++){
+            dosya<< " "<< matriss[i][j];
+        }
+        dosya<<"\n";
+    }
+  dosya.close();
+}
+
+ template<class Mtrx>
+ matris<Mtrx> &matris<Mtrx>::operator+(const matris<Mtrx> &B)
+{//iki matrisi birbiriyle toplar
+    int value;
+    matris<int> *sonuc =new matris<int>(rowcount,colcount,value);
+
+    for(int i=0;i<rowcount;i++){
+      for(int j=0;j<colcount;j++){
+
+      	 sonuc->matriss[i][j]=this->matriss[i][j]+B.matriss[i][j];
+
+    }
+}
+return *sonuc;
+}
+template<class Mtrx>
+matris<Mtrx> &matris<Mtrx>::operator-(const matris<Mtrx> &B){
+    //iki matrisi birbirinden cikartir
+	int i,j;
+    int value;
+
+    matris<int> *sonuc= new matris<int>(rowcount,colcount,value);
+    for(int i=0;i<rowcount;i++){
+      for(int j=0;j<colcount;j++){
+
+     sonuc->matriss[i][j]=this->matriss[i][j]-B.matriss[i][j];
+   }
+}
+    return *sonuc;
+    }
+template <class Mtrx>
+matris<Mtrx> &matris<Mtrx>::operator*( const matris<Mtrx> &X){
+//iki matrisi birbiriyle carpar
+Mtrx sum=0;
+int deger;
+ if(colcount==X.rowcount){
+    matris<int> *sonuc=new matris<int>(rowcount,X.colcount,deger);
+     for(int i=0; i<rowcount ;i++){
+        for(int j=0; j<X.colcount; j++){
+            for(int k=0 ;k<colcount ;k++ )
+             sum+=this->matriss[i][k]*(X.matriss[k][j]);
+              sonuc->matriss[i][j]=sum;
+                sum=0;
+                }
+            }
+            return *sonuc;
+        }else{
+        cout<<"yanlıs!";
+        return *this;
+        }
+    }
+template<class Mtrx>matris<Mtrx> &matris<Mtrx>::operator+(int scalar){
+//matrisi scalar bir sayiyla toplar
+    matris<int> *result=new matris<int>(rowcount,colcount,0);
+
+    int i,j;
+    for (i = 0; i < rowcount; i++){
+        for (j = 0; j < colcount; j++){
+            result->matriss[i][j] = this->matriss[i][j] + scalar;
+
+        }
+    }
+    return *result;
+}
+template<class Mtrx>matris<Mtrx> &matris<Mtrx>::operator-(int scalar){
+//scalar sayiyi matristen cikartir
+    matris<int> *result=new matris<int>(rowcount,colcount,0);
+
+    int i,j;
+    for (i = 0; i < rowcount; i++){
+        for (j = 0; j < colcount; j++){
+            result->matriss[i][j] = this->matriss[i][j] - scalar;
+        }
+    }
+    return *result;
+}
+template<class Mtrx>matris<Mtrx> &matris<Mtrx>::operator*(int scalar){
+//matrisi scalar bir sayiyla carpar
+Mtrx sum=0;
+    matris<int> *result=new matris<int>(rowcount,colcount,0);
+    for(int i=0; i<rowcount ;i++){
+        for(int j=0; j<colcount; j++){
+            for(int k=0 ;k<colcount ;k++ )
+       result->matriss[i][j]=this->matriss[i][k]*scalar;
+            }
+                }
+    return *result;
+
+}
+template<class Mtrx> matris<Mtrx> &matris<Mtrx>::operator/(int scalar){
+//marisi scalar sayiya boler
+    matris<int> *result=new matris<int>(rowcount,colcount,0);
+
+    int i,j;
+    for (i = 0; i < rowcount; i++){
+        for (j = 0; j < colcount; j++){
+            result->matriss[i][j] = this->matriss[i][j] / scalar;
+        }
+    }
+    return *result;
+}
+template<class Mtrx> matris<Mtrx> &matris<Mtrx>::operator%(int scalar){
+//matrisin scalar sayiya gore modunu alır
+    matris<int> *result=new matris<int>(rowcount,colcount,0);
+
+    int i,j;
+    for (i = 0; i < rowcount; i++){
+        for (j = 0; j < colcount; j++){
+            result->matriss[i][j] = this->matriss[i][j] % scalar;
+        }
+    }
+    return *result;
+}
+template<class Mtrx>matris<Mtrx> &matris<Mtrx>::operator^(int us){
+//matrisin verilen sayiya gore ussunu alır,tam olarak dogru calismiyor
+    int deger;
+   //matris<Mtrx> sonuc(rowcount,colcount,0);
+   //matris<Mtrx> m(rowcount,colcount,deger);
+       matris<int> *sonuc=new matris<int>(rowcount,colcount,0);
+       matris<int> *m=new matris<int>(rowcount,colcount,deger);
+
+    for(int i=0;i<rowcount;i++){
+        for(int j=0;j<colcount;j++){
+         sonuc->matriss[i][j]=pow(m->matriss[i][j],us);
+         //cout<<sonuc->matriss[i][j];
+
+        }
+       // cout<<"\n";
+    }
+       return *sonuc;
+        }
+template<class Mtrx> void matris<Mtrx>::transpoz(){
+ //matrisin transpozunu alir
+    int deger;
+
+    matris<int> *transpose=new matris<int>(colcount,rowcount,deger);
+
+    for (int i = 0; i < rowcount; i++){
+            for (int j = 0; j < colcount; j++){
+                transpose->matriss[j][i] = this->matriss[i][j];
+
+            }
+        }
+    for(int i=0;i<colcount;i++) {
+       for(int j=0;j<rowcount;j++) {
+        cout<<transpose->matriss[i][j]<<" ";
+       }
+        cout<<"\n";
+    }
+}
+
+template<class Mtrx> int matris<Mtrx>::determinant(){
+ //matrisin determinantini alir
+    matris<int> *det = new matris<int>(rowcount, colcount);
+
+    float determinant = 0;
+    if(rowcount==colcount){
+    if (this->rowcount == 2)
+    {
+        cout << "matris degerlerini giriniz:" << endl;
+        for (int i = 0; i < this->rowcount; i++){
+            for (int j = 0; j < this->colcount; j++){
+                cin >> det->matriss[i][j];
+            }
+        }
+        cout << "matrisiniz: " << endl;
+
+        for(int i=0; i<this->rowcount;i++){
+            for(int j=0;j<this->colcount;j++){
+                cout <<" "<<det->matriss[i][j];
+            }
+            cout <<"\n";
+        }
+       determinant=((det->matriss[0][0] * det->matriss[1][1])-
+       (det->matriss[0][1] * det->matriss[1][0]));
+       cout << "determinant: "<<determinant<<endl;
+
+    }
+    if (this->rowcount == 3)
+    {
+        cout << "matris degerlerini giriniz: " << endl;
+        for(int i=0;i<this->rowcount;i++){
+            for(int j =0;j<this->colcount;j++){
+                cin >> det->matriss[i][j];
+            }
+        }
+        cout << "matrisiniz: " << endl;
+        for(int i=0;i<this->rowcount;i++){
+            for(int j=0;j<this->colcount;j++){
+                cout <<" "<<det->matriss[i][j];
+            }
+            cout <<"\n";
+        }
+
+ for(int i=0;i<this->rowcount;i++){
+    for(int j=0;j<this->colcount;j++){
+determinant=det->matriss[0][0]*((det->matriss[1][1]*det->matriss[2][2])
+-(det->matriss[2][1] * det->matriss[1][2])) -
+ det->matriss[0][1]*(det->matriss[1][0] * det->matriss[2][2] -
+ det->matriss[2][0] * det->matriss[1][2]) +
+ det->matriss[0][2]*(det->matriss[1][0] * det->matriss[2][1] -
+ det->matriss[2][0] * det->matriss[1][1]);
+    }
+    }
+        }
+cout << "determinant: " <<determinant<<endl;
+    }
+    else
+        cout<<"bu matrisin determinanti alinamaz"<<endl;
+}
+template<class Mtrx> matris<Mtrx> &matris<Mtrx>::inverse(){
+//matrisin tersini gauss jordan yöntemiyle alir ,
+//tam dogru sonuc vermiyor
+    matris<int> *ters = new matris<int>(rowcount, colcount);
+    matris<int> *birim = new matris<int>(rowcount, colcount);
+    float d,k;
+    for(int a = 0; a <this->rowcount; a++){
+            for(int b = 0; b <this->colcount; b++){
+               if(a==b)
+                birim->matriss[a][b]=1;
+               else
+                birim->matriss[a][b]=0;
+            }
+
+          }
+    if(rowcount==colcount){
+    cout << "matris degerlerini giriniz: " << endl;
+
+        for(int i=0;i<this->rowcount;i++){
+            for(int j =0;j<this->colcount;j++){
+                cin >>ters->matriss[i][j];
+            }
+        }
+        cout << "matrisiniz: " << endl;
+ for(int i=0;i<this->rowcount;i++){
+            for(int j=0;j<this->colcount;j++){
+                cout <<" "<<ters->matriss[i][j];
+            }
+            cout <<"\n";
+        }
+ for(int i=0;i<rowcount;i++){
+    d=ters->matriss[i][i];
+        for(int j=0;j<rowcount;j++){
+            ters->matriss[i][j]=ters->matriss[i][j]/d;
+            birim->matriss[i][j]=birim->matriss[i][j]/d;
+            }
+for(int x=0;x<rowcount;x++){
+if(x!=i){
+    k=ters->matriss[x][i];
+  for(int j=0;j<rowcount;j++){
+    ters->matriss[x][j]=ters->matriss[x][j]-(ters->matriss[i][j]*k);
+    birim->matriss[x][j]=birim->matriss[x][j]-(birim->matriss[i][j]*k);
+                    }
+                }
+            }
+        }
+         cout << "ters matrisiniz: " << endl;
+            for(int i=0;i<rowcount;i++){
+              for(int j=0;j<colcount;j++){
+                cout <<" "<<birim->matriss[i][j];
+            }
+            cout <<"\n";
+        }
+    }
+    else
+        cout<<"bu matrisin tersi hesaplanamaz"<<endl;
+}
+template<class Mtrx>
+ matris<Mtrx> &matris<Mtrx>::emul(const matris<Mtrx> &m){
+//matrisi eleman duzeyinde carpar
+  matris<int> *sonuc =new matris<int>(rowcount,colcount,0);
+
+   for(int i=0;i<rowcount;i++){
+    for(int j=0;j<m.colcount;j++){
+            for(int k=0;k<colcount;k++)
+       sonuc->matriss[i][j]=this->matriss[i][k]* (m.matriss[k][j]);
+       cout<<" "<<sonuc->matriss[i][j];
+   }
+   cout<<"\n";
+   }
+return *sonuc;
+
+}
+
+template<class Mtrx> matris<Mtrx>::~matris(){
+ //destructor'a silme fonksiyonunu gonderir
+  sil();
+
+}
+
+template<>table<int>::table(){
+//default olarak 10x10 matrisi isimlendirip,0 ile doldurur
+   this->rowcount =11;
+   this->colcount=11;
+   int i,j;
+
+   mat2 = new string *[rowcount];
+
+   for (i = 0; i < rowcount; i++)
+        {
+            mat2[i] = new string [colcount];
+        }
+mat2[0][0]="  "; mat2[0][1]="A"; mat2[0][2]="B"; mat2[0][3]="C";
+mat2[0][4]="D"; mat2[0][5]="E"; mat2[0][6]="F"; mat2[0][7]="G";
+mat2[0][8]="H"; mat2[0][9]="I"; mat2[0][10]="J";
+
+mat2[1][0]="1 "; mat2[2][0]="2 "; mat2[3][0]="3 "; mat2[4][0]="4 ";
+mat2[5][0]="5 "; mat2[6][0]="6 "; mat2[7][0]="7 "; mat2[8][0]="8 ";
+mat2[9][0]="9 "; mat2[10][0]="10";
+
+   for(int i = 1; i <rowcount; i++){
+           for(int j = 1; j <colcount; j++){
+               mat2[i][j] = '0';
+           }
+   }
+}
+template<class Mtrx>
+table<Mtrx>::table(int rowcount,int colcount,int sayi){
+   int i,j;
+   string s;
+   s=to_string(sayi);
+   colcount+=1;
+   rowcount+=1;
+
+   mat2 = new string*[rowcount];
+   for(int i = 0;i <rowcount; i++)
+      mat2[i]=new string[colcount];
+
+    if(this->rowcount==1 && this->colcount==2){
+    mat2[0][0]="  "; mat2[0][1]="A"; mat2[0][2]="B"; mat2[1][0]="1 ";
+       for(int i = 1; i <rowcount; i++){
+           for(int j = 1; j <colcount; j++){
+               mat2[i][j] = s;
+           }
+   }
+
+      }
+   if(this->rowcount==2 && this->colcount==1){
+    mat2[0][0]="  "; mat2[0][1]="A"; mat2[1][0]="1 "; mat2[2][0]="2 ";
+        for(int i = 1; i <rowcount; i++){
+           for(int j = 1; j <colcount; j++){
+               mat2[i][j] = s;
+           }
+   }
+
+      }
+    if(this->rowcount==2 && this->colcount==2){
+     mat2[0][0]="  "; mat2[0][1]="A"; mat2[0][2]="B";
+     mat2[1][0]="1 "; mat2[2][0]="2 ";
+      for(int i = 1; i <rowcount; i++){
+           for(int j = 1; j <colcount; j++){
+               mat2[i][j] = s;
+           }
+   }
+
+      }
+
+}
+
+template<class Mtrx> void table<Mtrx>::yazdir(){
+//tabloyu yazdirir
+   for(int i=0;i<this->rowcount;i++){
+        for(int j=0;j<this->colcount;j++){
+            cout<<" "<<mat2[i][j];
+        }
+        cout << endl;
+    }
+}
+
+int menu(){
+   int secilen;
+   cout<<"1-toplama islemi"<<endl;
+   cout<<"2-cikarma islemi"<<endl;
+   cout<<"3-carpma islemi"<<endl;
+   cout<<"4-skaler toplama islemi"<<endl;
+   cout<<"5-skaler cikarma islemi"<<endl;
+   cout<<"6-skaler carpma islemi"<<endl;
+   cout<<"7-skaler bolme islemi"<<endl;
+   cout<<"8-skaler mod islemi"<<endl;
+   cout<<"9-us alma"<<endl;
+   cout<<"10-cikis"<<endl;
+   cout<<"yapmak istediginiz islemi seciniz"<<endl;
+   cin>>secilen;
+   return secilen;
+
+}
+
+int main(){
+  matris<int> *c0 = new matris<int>();
+  //c0->yazdir();
+  matris<int> *c1 = new matris<int>(5,4,6);
+  //c1->yazdir();
+  matris<int> *c2 = new matris<int>(15,15,'e');
+  //c2->yazdir("deneme.txt");*/
+  matris<int> *c3 = new matris<int>(5,4,'r');
+  //c3->yazdir();
+  matris<int> *c4 = new matris<int>(5,5,4);
+  //c4->yazdir();
+  //c4->resize(6,8);
+  //c4->yazdir();
+   matris<int> *m8=new matris<int>(3,3);
+   //m8->determinant();
+  // m8->inverse();
+   matris<int> *m1 = new matris<int>(3,3,5);
+   //matris<int> m1(3,3,10);
+   matris<int> *m2 = new matris<int>(4,2,9);
+   matris<int> *m3 =new matris<int>(3,3,0);
+   //m1->emul(m8);
+   //m2->transpoz();
+   table<int> t1;
+  // t1.yazdir();
+   table<int> t2(2,2,5);
+   //t2.yazdir();
+
+  /*switch(menu()){
+    case 1:
+                cout<<"Toplama\n";
+                (*m3)=(*m1)+(*m2);
+                 m3->yazdir();
+    break;
+    case 2:
+                cout<<"Cikartma\n";
+                (*m3)=(*m1)-(*m2);
+                m3->yazdir();
+    break;
+    case 3:
+                cout<<"carpma\n";
+               (*m3)=(*m2)*(*m1);
+                m3->yazdir();
+    break;
+    case 4:
+          cout<<"sakaler toplama\n";
+          (*m3)=(*m1)+12;
+          m3->yazdir();
+          break;
+    case 5:
+          cout<<"skaler cikarma\n";
+          (*m3)=(*m1)-4;
+          m3->yazdir();
+          break;
+    case 6:
+          cout<<"skaler carpma\n";
+          (*m3)=(*m1)*5;
+          m3->yazdir();
+          break;
+    case 7:
+          cout<<"skaler bolme\n";
+          (*m3)=(*m1)/3;
+          m3->yazdir();
+          break;
+    case 8:
+          cout<<"skaler mod\n";
+          (*m3)=(*m1)%2;
+          m3->yazdir();
+          break;
+    case 9:
+          cout<<"us alma\n";
+          (*m3) = (*m1)^2;
+           m3->yazdir();
+    case 10:
+          break;
+          default:
+          cout<<"lutfen gecerli bir sayi giriniz\n";
+  }*/
+    return 0;
+}
+
